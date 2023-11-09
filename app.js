@@ -7,7 +7,8 @@ const cors = require("cors");
 
 require("dotenv").config();
 
-const userRoutes = require("./routes/userRoute");
+const userRoutes = require("./routes/user_route");
+const postRoutes = require("./routes/post_route");
 const verify = require("./middlewares/verify_token");
 
 const app = express(); // create express app
@@ -39,3 +40,4 @@ module.exports = app; // export app
 
 // Routes
 app.use("/api/users", verify.verifyAPIReq, userRoutes);
+app.use("/api/post", verify.verifyAPIReq, postRoutes);
