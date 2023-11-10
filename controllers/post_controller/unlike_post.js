@@ -16,9 +16,16 @@ async function unlikePost(req, res) {
 
     const { postID } = req.body;
 
-    const post = await postModel.findByIdAndUpdate(
-      postID,
-      { $pull: { likes: { user: localUser.id } } },
+    if (!postID) {
+      return res.status(400).json({
+        success: false,
+        message: "Post ID is required!",
+      });
+    }
+
+    const post = await postModel.findOneAndUpdate(
+      { _id: postID },
+      { $pull: { likes: dbUser.id } },
       { new: true }
     );
 

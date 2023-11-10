@@ -40,4 +40,4 @@ module.exports = app; // export app
 
 // Routes
 app.use("/api/users", verify.verifyAPIReq, userRoutes);
-app.use("/api/post", verify.verifyAPIReq, postRoutes);
+app.use("/api/posts", verify.verifyAPIReq, postRoutes);

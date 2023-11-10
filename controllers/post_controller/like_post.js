@@ -24,8 +24,8 @@ async function likePost(req, res) {
     }
 
     const post = await postModel.findOneAndUpdate(
-      { _id: postID, "likes.user": { $ne: localUser.id } },
-      { $push: { likes: { user: localUser.id } } },
+      { _id: postID },
+      { $addToSet: { likes: dbUser.id } },
       { new: true }
     );
 
