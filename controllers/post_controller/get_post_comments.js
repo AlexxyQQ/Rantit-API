@@ -43,6 +43,7 @@ async function getPostsComments(req, res) {
 
     res.status(200).json({
       success: true,
+      current_page: page,
       message: "Comments retrieved successfully",
       data: comments,
     });

@@ -42,6 +42,7 @@ async function getPostsLikes(req, res) {
     res.status(200).json({
       success: true,
       message: "Likes retrieved successfully",
+      current_page: page,
       data: likes,
     });
   } catch (error) {
