@@ -14,7 +14,10 @@ async function deleteUser(req, res) {
 
     await User.findByIdAndDelete(localUser.id);
 
-    res.status(200).json({ message: "Profile deleted successfully" });
+    res.status(200).json({
+      success: true,
+      message: "Profile deleted successfully",
+    });
   } catch (error) {
     res.status(400).json({
       success: false,
