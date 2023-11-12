@@ -74,6 +74,8 @@ async function uploadProfilePic(req, res) {
       loggedUser.profilePic = filePath;
       await loggedUser.save();
 
+      loggedUser.password = undefined;
+
       return res.status(200).json({
         success: true,
         data: loggedUser,

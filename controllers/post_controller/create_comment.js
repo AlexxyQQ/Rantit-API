@@ -33,7 +33,7 @@ async function createComment(req, res) {
     // add comment to post
     const post = await Post.findOneAndUpdate(
       { _id: contentID },
-      { $push: { comments: createdComment._id } }, // corrected field name to 'comments'
+      { $push: { comment: createdComment._id } }, // corrected field name to 'comments'
       { new: true }
     );
 

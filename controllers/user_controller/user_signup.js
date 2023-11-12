@@ -1,6 +1,7 @@
 const User = require("../../models/user_model");
 const bcryptjs = require("bcryptjs");
-const nodemailer = require("nodemailer");
+const sendEmail = require("../../common/send_email");
+const generateOTP = require("../../common/otp_generator");
 
 async function signup(req, res) {
   console.log("Signup route hit");
@@ -59,7 +60,7 @@ async function signup(req, res) {
           verified: user.verified,
           type: user.type,
         },
-        message: "User created successfully!",
+        message: "OTP sent to your email please verify!",
       });
     } else {
       const sixDigitOTP = generateOTP();
@@ -87,7 +88,7 @@ async function signup(req, res) {
           verified: user.verified,
           type: user.type,
         },
-        message: "User created successfully!",
+        message: "OTP sent to your email please verify!",
       });
     }
   } catch (err) {
@@ -96,42 +97,3 @@ async function signup(req, res) {
 }
 
 module.exports = signup;
-
-function generateOTP() {
-  // Define the character set for your OTP (you can customize this)
-  const characters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-
-  let otp = "";
-
-  for (let i = 0; i < 6; i++) {
-    const randomIndex = Math.floor(Math.random() * characters.length);
-    otp += characters.charAt(randomIndex);
-  }
-
-  return otp;
-}
-
-async function sendEmail(recipientEmail, emailSubject, emailText) {
-  const transporter = nodemailer.createTransport({
-    service: "gmail",
-    host: "smtp.gmail.com",
-    auth: {
-      user: process.env.EMAIL,
-      pass: process.env.PASSWORD,
-    },
-  });
-
-  const mailOptions = {
-    from: process.env.EMAIL,
-    to: recipientEmail,
-    subject: emailSubject,
-    text: emailText,
-  };
-
-  try {
-    const info = await transporter.sendMail(mailOptions);
-    console.log("Email sent:", info.response);
-  } catch (error) {
-    console.error("Error sending email:", error);
-  }
-}

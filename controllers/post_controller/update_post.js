@@ -1,5 +1,6 @@
 const postModel = require("../../models/post_model");
 const User = require("../../models/user_model");
+const commentModel = require("../../models/comment_model");
 
 async function updatePost(req, res) {
   try {
@@ -25,6 +26,23 @@ async function updatePost(req, res) {
         success: false,
         message: "Post does not exist or you are not authorized to update it!",
       });
+    }
+
+    // fill the commmen and like with details
+    if (post.likes.length > 0) {
+      const users = await User.find({ _id: { $in: post.likes } });
+      post.likes = undefined;
+      users.forEach((user) => {
+        user.password = undefined;
+        user.otp = undefined;
+      });
+      post.likes = users;
+    }
+    console.log(post.comment.length);
+    if (post.comment.length > 0) {
+      const comments = await commentModel.find({ post: postID });
+      post.comment = undefined;
+      post.comment = comments;
     }
 
     res.status(200).json({

@@ -4,6 +4,7 @@ const commentModel = require("../../models/comment_model");
 
 async function getLikedPosts(req, res) {
   try {
+    const localUser = res.locals.user;
     const page = req.body.page || 1;
     const perPage = 20;
 
@@ -13,63 +14,39 @@ async function getLikedPosts(req, res) {
     // get all posts with pagination
     const posts = await postModel.find().skip(skip).limit(perPage);
 
-    // get user IDs who liked any post
-    const likedUserIds = posts.reduce(
-      (ids, post) => ids.concat(post.likes.slice(0, 10)), // Limit to the first 10 likes
-      []
-    );
+    // filter the post liked by the logged-in user
+    const likedPosts = [];
 
-    // get unique users who liked any post
-    const uniqueLikedUserIds = [...new Set(likedUserIds)];
+    for (const post of posts) {
+      if (post.likes.includes(localUser.id)) {
+        let postCopy = JSON.parse(JSON.stringify(post)); // Make a copy of the post object
 
-    // get only the first 10 users who liked any post
-    const users = await User.find({
-      _id: { $in: uniqueLikedUserIds.slice(0, 10) },
-    });
+        if (postCopy.likes.length > 0) {
+          const users = await User.find({ _id: { $in: postCopy.likes } });
+          postCopy.likes = users.map((user) => {
+            user.password = undefined;
+            user.otp = undefined;
+            return user;
+          });
+        }
 
-    // get only the first 10 comments for all posts
-    const comments = await commentModel
-      .find({
-        post: { $in: posts.map((post) => post._id) },
-      })
-      .limit(10);
+        if (postCopy.comment.length > 0) {
+          const comments = await commentModel.find({ post: postCopy._id });
+          postCopy.comment = comments;
+        }
 
-    // map users and comments to their respective posts
-    const postsWithDetails = posts.map((post) => {
-      const postUsers = users
-        .filter((user) => post.likes.includes(user._id))
-        .slice(0, 10);
-      const postComments = comments
-        .filter((comment) => comment.post.equals(post._id))
-        .slice(0, 10);
-
-      // remove password from user details
-      postUsers.forEach((user) => {
-        user.password = undefined;
-        user.otp = undefined;
-      });
-
-      // if the post contains the logged in user's ID, then return the post
-      if (postUsers.filter((user) => user._id.equals(res.locals.user._id))) {
-        return {
-          _id: post._id,
-          content: post.content,
-          likes: postUsers,
-          comments: postComments,
-        };
-      } else {
-        return null;
+        likedPosts.push(postCopy);
       }
-    });
+    }
 
     res.status(200).json({
       success: true,
       message: "All posts retrieved successfully",
       current_page: page,
-      data: postsWithDetails,
+      data: likedPosts,
     });
   } catch (error) {
-    res.status(400).json({
+    res.status(500).json({
       success: false,
       message: error.message,
     });

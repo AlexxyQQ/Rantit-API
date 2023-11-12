@@ -1,6 +1,6 @@
 const User = require("../../models/user_model");
 
-async function otpValidator(req, res) {
+async function singupOTPValidator(req, res) {
   try {
     const { email, otp } = req.body;
 
@@ -43,4 +43,4 @@ async function otpValidator(req, res) {
   }
 }
 
-module.exports = otpValidator;
+module.exports = singupOTPValidator;

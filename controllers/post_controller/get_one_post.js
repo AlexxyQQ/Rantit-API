@@ -17,19 +17,26 @@ async function getOnePost(req, res) {
 
     // get post
     post = await postModel.findById(contentID);
+
+    if (!post) {
+      return res.status(400).json({
+        success: false,
+        message: "Post does not exist!",
+      });
+    }
+
     // get users who liked the post
-    const users = await User.find({ _id: { $in: post.likes } });
-    // get comments
-    const comments = await commentModel.find({ post: contentID });
+    if (post.likes.length > 0) {
+      const users = await User.find({ _id: { $in: post.likes } });
+      post.likes = undefined;
+      post.likes = users;
+    }
 
-    // remove the like and comment fields from the post
-    post.likes = undefined;
-    post.comment = undefined;
-
-    // add the users who liked the post to the post
-    post.likes = users;
-    // add the comments to the post
-    post.comment = comments;
+    if (post.comment.length > 0) {
+      const comments = await commentModel.find({ post: contentID });
+      post.comment = undefined;
+      post.comment = comments;
+    }
 
     res.status(200).json({
       success: true,

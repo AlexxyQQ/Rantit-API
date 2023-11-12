@@ -41,7 +41,7 @@ async function login(req, res) {
         expiresIn: process.env.JWT_EXPIRES_IN,
       }
     );
-
+    user.password = undefined;
     res.status(200).json({
       success: true,
       data: { user, token: token },

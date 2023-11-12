@@ -31,15 +31,8 @@ async function getPostsComments(req, res) {
     // get comments for the post with pagination
     const comments = await commentModel
       .find({ post: postID })
-      .populate("user")
       .skip(skip)
       .limit(perPage);
-
-    //   remove user password from comments
-    comments.forEach((comment) => {
-      comment.user.password = undefined;
-      comment.user.otp = undefined;
-    });
 
     res.status(200).json({
       success: true,
