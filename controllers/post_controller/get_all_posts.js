@@ -13,19 +13,26 @@ async function getAllPosts(req, res) {
     // get all posts with pagination
     const posts = await postModel.find().skip(skip).limit(perPage);
 
-    // get user IDs who liked any post
-    const likedUserIds = posts.reduce(
-      (ids, post) => ids.concat(post.likes.slice(0, 10)), // Limit to the first 10 likes
-      []
-    );
-
-    // get unique users who liked any post
-    const uniqueLikedUserIds = [...new Set(likedUserIds)];
-
-    // get only the first 10 users who liked any post
-    const users = await User.find({
-      _id: { $in: uniqueLikedUserIds.slice(0, 10) },
-    });
+    // get owner of each post and users who liked any post
+    const [postOwners, users] = await Promise.all([
+      User.find({ _id: { $in: posts.map((post) => post.user._id) } })
+        .select("-password -otp")
+        .lean(),
+      User.find({
+        _id: {
+          $in: [
+            ...new Set(
+              posts.reduce(
+                (ids, post) => ids.concat(post.likes.slice(0, 10)),
+                []
+              )
+            ),
+          ],
+        },
+      })
+        .select("-password -otp")
+        .lean(),
+    ]);
 
     // get only the first 10 comments for all posts
     const comments = await commentModel
@@ -35,28 +42,29 @@ async function getAllPosts(req, res) {
       .limit(10);
 
     // map users and comments to their respective posts
-    const postsWithDetails = posts.map((post) => {
-      const postUsers = users
-        .filter((user) => post.likes.includes(user._id))
-        .slice(0, 10);
-      const postComments = comments
-        .filter((comment) => comment.post.equals(post._id))
-        .slice(0, 10);
+    const postsWithDetails = await Promise.all(
+      posts.map(async (post) => {
+        const postLikers = users
+          .filter((user) => post.likes.includes(user._id))
+          .slice(0, 10);
+        const postComments = comments
+          .filter((comment) => comment.post.equals(post._id))
+          .slice(0, 10);
+        const postOwner = postOwners.find((user) =>
+          post.user._id.equals(user._id)
+        );
 
-      // remove password from user details
-      postUsers.forEach((user) => {
-        user.password = undefined;
-        user.otp = undefined;
-      });
-
-      // create a new object with only the necessary details
-      return {
-        _id: post._id,
-        content: post.content,
-        likes: postUsers,
-        comments: postComments,
-      };
-    });
+        // create a new object with only the necessary details
+        return {
+          _id: post._id,
+          user: postOwner,
+          content: post.content,
+          likes: postLikers,
+          comments: postComments,
+          createdAt: post.createdAt,
+        };
+      })
+    );
 
     res.status(200).json({
       success: true,

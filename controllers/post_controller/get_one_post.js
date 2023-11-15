@@ -38,6 +38,12 @@ async function getOnePost(req, res) {
       post.comment = comments;
     }
 
+    const a = await User.findById(post.user._id);
+    a.otp = undefined;
+    a.password = undefined;
+    post.user = undefined;
+    post.user = a;
+
     res.status(200).json({
       success: true,
       message: "Post found successfully",
