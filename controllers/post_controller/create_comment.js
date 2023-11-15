@@ -14,6 +14,8 @@ async function createComment(req, res) {
       });
     }
 
+    console.log(localUser);
+
     const newComment = {
       comment,
       user: localUser.id,

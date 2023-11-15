@@ -39,6 +39,7 @@ async function getAllPosts(req, res) {
       .find({
         post: { $in: posts.map((post) => post._id) },
       })
+      .populate("user", "-password -otp")
       .limit(10);
 
     // map users and comments to their respective posts

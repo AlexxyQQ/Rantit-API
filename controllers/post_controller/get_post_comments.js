@@ -1,6 +1,7 @@
 const postModel = require("../../models/post_model");
 const User = require("../../models/user_model");
 const commentModel = require("../../models/comment_model");
+const user = require("../../models/user_model");
 
 async function getPostsComments(req, res) {
   try {
@@ -32,7 +33,10 @@ async function getPostsComments(req, res) {
     const comments = await commentModel
       .find({ post: postID })
       .skip(skip)
+      .populate("user", "-password -otp")
       .limit(perPage);
+
+    // Fetch user details for each comment using Promise.all
 
     res.status(200).json({
       success: true,
