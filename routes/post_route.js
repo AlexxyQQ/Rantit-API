@@ -33,4 +33,8 @@ postRouter
   .route("/getPostsLikes")
   .post(verifyUser, post_controller.get_post_likes);
 
+postRouter
+  .route("/replyComment")
+  .post(verifyUser, post_controller.reply_comment);
+
 module.exports = postRouter;

@@ -12,38 +12,38 @@ async function getLikedPosts(req, res) {
     const skip = (page - 1) * perPage;
 
     // get all posts with pagination
-    const posts = await postModel.find().skip(skip).limit(perPage);
-
-    // filter the post liked by the logged-in user
-    const likedPosts = [];
-
-    for (const post of posts) {
-      if (post.likes.includes(localUser.id)) {
-        let postCopy = JSON.parse(JSON.stringify(post)); // Make a copy of the post object
-
-        if (postCopy.likes.length > 0) {
-          const users = await User.find({ _id: { $in: postCopy.likes } });
-          postCopy.likes = users.map((user) => {
-            user.password = undefined;
-            user.otp = undefined;
-            return user;
-          });
-        }
-
-        if (postCopy.comment.length > 0) {
-          const comments = await commentModel.find({ post: postCopy._id });
-          postCopy.comment = comments;
-        }
-
-        likedPosts.push(postCopy);
-      }
-    }
+    const posts = await postModel
+      .find({
+        likes: { $in: [localUser.id] },
+      })
+      .populate("user", "-password -otp")
+      .populate("comment")
+      .populate({
+        path: "comment",
+        populate: {
+          path: "user",
+          select: "-password -otp",
+        },
+      })
+      .populate({
+        path: "comment",
+        populate: {
+          path: "replies",
+          populate: {
+            path: "user",
+            select: "-password -otp",
+          },
+        },
+      })
+      .populate("likes", "-password -otp")
+      .skip(skip)
+      .limit(perPage);
 
     res.status(200).json({
       success: true,
       message: "All posts retrieved successfully",
       current_page: page,
-      data: likedPosts,
+      data: posts,
     });
   } catch (error) {
     res.status(500).json({

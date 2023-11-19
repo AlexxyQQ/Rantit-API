@@ -9,6 +9,7 @@ const get_all_post = require("./post_controller/get_all_posts");
 const get_liked_post = require("./post_controller/get_liked_posts");
 const get_post_comments = require("./post_controller/get_post_comments");
 const get_post_likes = require("./post_controller/get_post_likes");
+const reply_comment = require("./post_controller/reply_comment");
 
 const post_controller_exports = {
   create_comment,
@@ -22,6 +23,7 @@ const post_controller_exports = {
   get_liked_post,
   get_post_comments,
   get_post_likes,
+  reply_comment,
 };
 
 module.exports = post_controller_exports;

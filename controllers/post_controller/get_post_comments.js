@@ -32,8 +32,23 @@ async function getPostsComments(req, res) {
     // get comments for the post with pagination
     const comments = await commentModel
       .find({ post: postID })
-      .skip(skip)
       .populate("user", "-password -otp")
+      .populate("comment")
+      .populate({
+        path: "comment",
+        populate: {
+          path: "user",
+          select: "-password -otp",
+        },
+      })
+      .populate({
+        path: "replies",
+        populate: {
+          path: "user",
+          select: "-password -otp",
+        },
+      })
+      .skip(skip)
       .limit(perPage);
 
     // Fetch user details for each comment using Promise.all

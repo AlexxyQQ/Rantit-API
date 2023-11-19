@@ -16,7 +16,24 @@ async function getOnePost(req, res) {
     }
 
     // get post
-    post = await postModel.findById(contentID);
+    post = await postModel
+      .findById(contentID)
+      .populate("user", "-password -otp")
+      .populate({
+        path: "comment",
+        populate: {
+          path: "user",
+          select: "-password -otp",
+        },
+        populate: {
+          path: "replies",
+          populate: {
+            path: "user",
+            select: "-password -otp",
+          },
+        },
+      })
+      .populate("likes", "-password -otp");
 
     if (!post) {
       return res.status(400).json({
@@ -24,27 +41,6 @@ async function getOnePost(req, res) {
         message: "Post does not exist!",
       });
     }
-
-    // get users who liked the post
-    if (post.likes.length > 0) {
-      const users = await User.find({ _id: { $in: post.likes } });
-      post.likes = undefined;
-      post.likes = users;
-    }
-
-    if (post.comment.length > 0) {
-      const comments = await commentModel
-        .find({ post: contentID })
-        .populate("user", "-password -otp");
-      post.comment = undefined;
-      post.comment = comments;
-    }
-
-    const a = await User.findById(post.user._id);
-    a.otp = undefined;
-    a.password = undefined;
-    post.user = undefined;
-    post.user = a;
 
     res.status(200).json({
       success: true,

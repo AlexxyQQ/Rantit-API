@@ -14,15 +14,6 @@ async function createComment(req, res) {
       });
     }
 
-    console.log(localUser);
-
-    const newComment = {
-      comment,
-      type,
-      user: localUser.id,
-      post: contentID,
-    };
-
     // check if post exists
     const postExists = await Post.exists({ _id: contentID });
 
@@ -32,6 +23,14 @@ async function createComment(req, res) {
         message: "Post does not exist!",
       });
     }
+
+    const newComment = {
+      comment,
+      type,
+      user: type === "anonymous" ? null : localUser.id,
+      post: contentID,
+    };
+
     const createdComment = await Comment.create(newComment);
     // add comment to post
     const post = await Post.findOneAndUpdate(
