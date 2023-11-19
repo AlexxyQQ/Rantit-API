@@ -24,7 +24,7 @@ async function createPost(req, res) {
       content,
       type,
       // if type == anonymous, user will be null
-      user: type === "anonymous" ? null : localUser.id,
+      user: localUser.id,
     };
 
     const post = await postModel.create(newPost);

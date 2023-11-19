@@ -27,28 +27,32 @@ async function updatePost(req, res) {
         message: "Post does not exist or you are not authorized to update it!",
       });
     }
-
-    // fill the commmen and like with details
-    if (post.likes.length > 0) {
-      const users = await User.find({ _id: { $in: post.likes } });
-      post.likes = undefined;
-      users.forEach((user) => {
-        user.password = undefined;
-        user.otp = undefined;
-      });
-      post.likes = users;
-    }
-    console.log(post.comment.length);
-    if (post.comment.length > 0) {
-      const comments = await commentModel.find({ post: postID });
-      post.comment = undefined;
-      post.comment = comments;
-    }
-
+    const updatedPost = await postModel
+      .findById(postID)
+      .populate("user", "-password -otp")
+      .populate("comment")
+      .populate({
+        path: "comment",
+        populate: {
+          path: "user",
+          select: "-password -otp",
+        },
+      })
+      .populate({
+        path: "comment",
+        populate: {
+          path: "replies",
+          populate: {
+            path: "user",
+            select: "-password -otp",
+          },
+        },
+      })
+      .populate("likes", "-password -otp");
     res.status(200).json({
       success: true,
       message: "Post updated successfully",
-      data: post,
+      data: updatedPost,
     });
   } catch (error) {
     res.status(400).json({

@@ -31,7 +31,7 @@ async function replyComment(req, res) {
     const newReply = {
       reply,
       type,
-      user: type === "anonymous" ? null : localUser.id,
+      user: localUser.id,
       comment: comment._id,
       post: comment.post,
     };

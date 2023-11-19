@@ -27,7 +27,7 @@ async function createComment(req, res) {
     const newComment = {
       comment,
       type,
-      user: type === "anonymous" ? null : localUser.id,
+      user: localUser.id,
       post: contentID,
     };
 
