@@ -5,7 +5,7 @@ async function createComment(req, res) {
   try {
     const localUser = res.locals.user;
 
-    const { contentID, comment } = req.body;
+    const { contentID, comment, type } = req.body;
 
     if (!contentID) {
       return res.status(400).json({
@@ -18,6 +18,7 @@ async function createComment(req, res) {
 
     const newComment = {
       comment,
+      type,
       user: localUser.id,
       post: contentID,
     };

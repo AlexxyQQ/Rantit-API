@@ -5,7 +5,7 @@ async function createPost(req, res) {
   try {
     const localUser = res.locals.user;
 
-    const { content } = req.body;
+    const { content, type } = req.body;
 
     if (!content) {
       return res.status(400).json({
@@ -13,9 +13,16 @@ async function createPost(req, res) {
         message: "Content is required!",
       });
     }
+    if (!type) {
+      return res.status(400).json({
+        success: false,
+        message: "Type is required!",
+      });
+    }
 
     const newPost = {
       content,
+      type,
       user: localUser.id,
     };
 

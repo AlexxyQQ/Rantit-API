@@ -33,7 +33,9 @@ async function getOnePost(req, res) {
     }
 
     if (post.comment.length > 0) {
-      const comments = await commentModel.find({ post: contentID });
+      const comments = await commentModel
+        .find({ post: contentID })
+        .populate("user", "-password -otp");
       post.comment = undefined;
       post.comment = comments;
     }
